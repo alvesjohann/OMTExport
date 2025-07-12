@@ -1,0 +1,11 @@
+blender_version_min = "4.2.0"
+id = "OMT_Export"
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
+maintainer = "Johann Alves <contato@johannalves.com.br>"
+name = "Objects, Materials & Time"
+schema_version = "1.0.0"
+tagline = "Export a list of objects, materials and time of production"
+type = "add-on"
+version = "1.0.0"
