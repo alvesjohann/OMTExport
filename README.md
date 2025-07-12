@@ -1,11 +1,14 @@
 # Objects, Materials & Time Export (OMT Export)
 Ajuda a criar e exportar do Blender uma lista de objetos, materiais e tempo de produção em formato de tabela (.txt).
 
-## Traduções
-O código é feito em inglês. UI e comentários estão, por enquanto, apenas em português.
+## Blender
+Versão Recomendada: 4.2 ou superior.
 
 ## Documentação
 Em construção.
+
+## Traduções
+O código é feito em inglês. UI e comentários estão, por enquanto, apenas em português.
 
 ## Imagens
 <p align="center">
