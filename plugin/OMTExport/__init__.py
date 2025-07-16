@@ -1,5 +1,7 @@
 import bpy
-import math
+from math import ceil, floor
+
+from .OMT_functions import *
 
 from bpy.types import (
     Operator,
@@ -15,9 +17,9 @@ from bpy.props import (
     StringProperty
 )
 
-from .functions import *
-
-###########################################  Properties ###########################################
+# =====================================================
+#                      Properties
+# =====================================================
 
 class OMT_Properties(PropertyGroup):
     #DEFINIÇÕES GERAIS
@@ -116,11 +118,10 @@ class OMT_Properties(PropertyGroup):
     SLOTTED_MDF_BIGGER_SIDE_CHAR : StringProperty(name = "Slotted MDF Bigger Side Char",  default = '1')
     
     SLOTTED_MDF_DISTANCE : FloatProperty(name = "Distância", subtype = "DISTANCE", unit = "LENGTH", min = 1, default = 0.11)
-    
-    
 
-###########################################  Panels ###########################################
-
+# =====================================================
+#                      Panels
+# =====================================================
 
 class OMT_Measures(Panel):
     bl_label = "Sobrepor Medidas"
@@ -149,7 +150,6 @@ class OMT_Measures(Panel):
         
         ROW = LAYOUT.row()
         ROW.operator("omt.remove_dimensions")
-
 
 class OMT_Assign_Edge_Banding(Panel):
     bl_label = "Fita de Borda"
@@ -186,7 +186,6 @@ class OMT_Assign_Edge_Banding(Panel):
         ROW = LAYOUT.row()
         ROW.operator("omt.assign_edge_banding")
 
-
 class OMT_Material_Edge_Banding(Panel):
     bl_label = "Definições de Material"
     bl_idname = "OMT_PT_MATERIAL_EDGE_BANDING"
@@ -205,7 +204,6 @@ class OMT_Material_Edge_Banding(Panel):
         ROW.prop(OMT_TOOL, "PANEL_EDGE_BANDING_MATERIAL")
         ROW = LAYOUT.row()
         ROW.prop(OMT_TOOL, "PANEL_EDGE_BANDING_NAME")
-
 
 class OMT_Colors_Edge_Banding(Panel):
     bl_label = "Definições de Cores"
@@ -228,7 +226,6 @@ class OMT_Colors_Edge_Banding(Panel):
         ROW = LAYOUT.row()
         ROW.prop(OMT_TOOL, "PANEL_EDGE_BANDING_WOOD_COLOR")
         
-        
 class OMT_Export(Panel):
     bl_label = "Exportar Objetos e Tempos"
     bl_idname = "OMT_PT_EXPORT"
@@ -245,24 +242,12 @@ class OMT_Export(Panel):
         ROW.operator("omt.export_objects_time")
         
 '''        
-class OMT_Export(Panel):
-    bl_label = "Exportar Objetos e Tempos"
-    bl_idname = "OMT_PT_EXPORT"
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "UI"
-    bl_category = "OMT Export"
-
-    def draw(self, context):'''
-        
-
-
-'''
 CRIAR PAINEIS PARA DEFINIÇÕES DE TEMPO, SOLDA, ETC.
 '''
-        
-        
-########################################### Operators ###########################################
 
+# =====================================================
+#                      Operators
+# =====================================================
 
 class ASSIGN_OT_DIMENSIONS(Operator):
     bl_label = "Atribuir"
@@ -386,7 +371,6 @@ class ASSIGN_OT_DIMENSIONS(Operator):
         
         return {"FINISHED"}
 
-
 class REMOVE_OT_DIMENSIONS(Operator):
     bl_label = "Remover Medidas"
     bl_idname = "omt.remove_dimensions"
@@ -416,7 +400,6 @@ class REMOVE_OT_DIMENSIONS(Operator):
                 SELECTED_OBJECT.name = SELECTED_OBJECT_STRING
                     
         return {"FINISHED"}
-
 
 class ASSIGN_OT_EDGE_BANDING(Operator):
     bl_label = "Atribuir"
@@ -837,7 +820,7 @@ class EXPORT_OT_OBJECTS_TIME(Operator):
                         elif ITEM_AUTOMATION == METAL_BENDING_CHAR:
                             METAL_BENDING = int(ITEM[1:3])
                             
-                            OMT_TOOL.TIME_SECONDS += math.ceil(METAL_BENDING*METAL_BENDING_TIME)
+                            OMT_TOOL.TIME_SECONDS += ceil(METAL_BENDING*METAL_BENDING_TIME)
                             METAL_BENDING = 0
                        
                         #TEMPO DE CORTE LASER 
@@ -850,8 +833,8 @@ class EXPORT_OT_OBJECTS_TIME(Operator):
                             
             #ADICIONAR TEMPO TOTAL DO MATERIAL À LISTA DE TEMPOS                
             if OMT_TOOL.TIME_SECONDS > 0:
-                OMT_TOOL.TIME_HOURS = int(math.floor(OMT_TOOL.TIME_SECONDS/3600))
-                OMT_TOOL.TIME_MINUTES = int(math.floor(OMT_TOOL.TIME_SECONDS/60) - OMT_TOOL.TIME_HOURS*60)
+                OMT_TOOL.TIME_HOURS = int(floor(OMT_TOOL.TIME_SECONDS/3600))
+                OMT_TOOL.TIME_MINUTES = int(floor(OMT_TOOL.TIME_SECONDS/60) - OMT_TOOL.TIME_HOURS*60)
                 OMT_TOOL.TIME_SECONDS = int(round(OMT_TOOL.TIME_SECONDS - OMT_TOOL.TIME_MINUTES*60 - OMT_TOOL.TIME_HOURS*3600,0))
                     
                 LIST_OF_TIMES.append(MATERIAL + "\t" + str(OMT_TOOL.TIME_HOURS) + "\t" + str(OMT_TOOL.TIME_MINUTES) + "\t" + str(OMT_TOOL.TIME_SECONDS))
@@ -891,7 +874,7 @@ class EXPORT_OT_OBJECTS_TIME(Operator):
             
         if METAL_LASER_CUTTING > 0:
             #CONVERTER PARA MINUTOS
-            METAL_LASER_CUTTING = math.ceil(METAL_LASER_CUTTING/60)
+            METAL_LASER_CUTTING = ceil(METAL_LASER_CUTTING/60)
             
             NEW_LINES.append(METAL_LASER_CUTTING_MATERIAL + "\tX\t" + str(METAL_LASER_CUTTING).replace(".",",") + "\t" + METAL_LASER_CUTTING_NAME)
 
@@ -937,7 +920,7 @@ class EXPORT_OT_OBJECTS_TIME(Operator):
             NEW_LINES.append(SCREW_MATERIAL + SCREW_50MM_CHAR + "\tX\tX\t" + SCREW_NAME + "\t" + SCREW_50MM)
             
         if ANGLE_BRACKET_ZAMAC > 0:
-            ANGLE_BRACKET_ZAMAC = int(math.ceil(ANGLE_BRACKET_ZAMAC))
+            ANGLE_BRACKET_ZAMAC = int(ceil(ANGLE_BRACKET_ZAMAC))
             ANGLE_BRACKET_ZAMAC_SCREW = str(ANGLE_BRACKET_ZAMAC*2)
             NEW_LINES.append(ANGLE_BRACKET_ZAMAC_MATERIAL + "\tX\tX\t" + ANGLE_BRACKET_ZAMAC_NAME + "\t" + str(ANGLE_BRACKET_ZAMAC))
             NEW_LINES.append(SCREW_MATERIAL + SCREW_16MM_CHAR + "\tX\tX\t" + SCREW_NAME + "\t" + ANGLE_BRACKET_ZAMAC_SCREW)
@@ -965,8 +948,9 @@ class EXPORT_OT_OBJECTS_TIME(Operator):
 
         return {"FINISHED"}
 
-
-###########################################  Registration ###########################################
+# =====================================================
+#                      Registration
+# =====================================================
 
 classes = [
     OMT_Properties,
@@ -994,8 +978,4 @@ def unregister():
     del bpy.types.Scene.OMT_Export_tool
 
 if __name__ == "__main__":
-    try:
-        unregister()
-    except:
-        pass
     register()

@@ -1,4 +1,5 @@
 
+###########################################  Update Edge Banding Material Selection ###########################################
 
 def UPDATED_PANEL_EDGE_WHITE_MATERIAL(self, context):
     SCENE = context.scene
@@ -23,6 +24,8 @@ def UPDATED_PANEL_EDGE_BLACK_MATERIAL(self, context):
     if OMT_TOOL.PANEL_EDGE_BANDING_BLACK_MATERIAL:
         OMT_TOOL.PANEL_EDGE_BANDING_WHITE_MATERIAL = False
         OMT_TOOL.PANEL_EDGE_BANDING_WOOD_MATERIAL = False
+
+###########################################  Update Edge Banding Thickness Selection ###########################################
     
 def UPDATED_PANEL_EDGE_BANDING_22MM(self, context):
     SCENE = context.scene
