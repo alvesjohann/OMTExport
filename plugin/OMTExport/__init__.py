@@ -1,8 +1,6 @@
 import bpy
 from math import ceil, floor
 
-from .OMT_functions import *
-
 from bpy.types import (
     Operator,
     Panel,
@@ -16,6 +14,62 @@ from bpy.props import (
     PointerProperty,
     StringProperty
 )
+
+# =====================================================
+#                      Functions
+# =====================================================
+
+#  Update Edge Banding Material Selection 
+
+def UPDATED_PANEL_EDGE_WHITE_MATERIAL(self, context):
+    SCENE = context.scene
+    OMT_TOOL = SCENE.OMT_Export_tool
+        
+    if OMT_TOOL.PANEL_EDGE_BANDING_WHITE_MATERIAL:
+        OMT_TOOL.PANEL_EDGE_BANDING_WOOD_MATERIAL = False
+        OMT_TOOL.PANEL_EDGE_BANDING_BLACK_MATERIAL = False
+
+def UPDATED_PANEL_EDGE_WOOD_MATERIAL(self, context):
+    SCENE = context.scene
+    OMT_TOOL = SCENE.OMT_Export_tool
+        
+    if OMT_TOOL.PANEL_EDGE_BANDING_WOOD_MATERIAL:
+        OMT_TOOL.PANEL_EDGE_BANDING_WHITE_MATERIAL = False
+        OMT_TOOL.PANEL_EDGE_BANDING_BLACK_MATERIAL = False
+
+def UPDATED_PANEL_EDGE_BLACK_MATERIAL(self, context):
+    SCENE = context.scene
+    OMT_TOOL = SCENE.OMT_Export_tool
+        
+    if OMT_TOOL.PANEL_EDGE_BANDING_BLACK_MATERIAL:
+        OMT_TOOL.PANEL_EDGE_BANDING_WHITE_MATERIAL = False
+        OMT_TOOL.PANEL_EDGE_BANDING_WOOD_MATERIAL = False
+
+#  Update Edge Banding Thickness Selection #
+    
+def UPDATED_PANEL_EDGE_BANDING_22MM(self, context):
+    SCENE = context.scene
+    OMT_TOOL = SCENE.OMT_Export_tool
+        
+    if OMT_TOOL.PANEL_EDGE_BANDING_22MM:
+        OMT_TOOL.PANEL_EDGE_BANDING_45MM = False
+        OMT_TOOL.PANEL_EDGE_BANDING_100MM = False
+    
+def UPDATED_PANEL_EDGE_BANDING_45MM(self, context):
+    SCENE = context.scene
+    OMT_TOOL = SCENE.OMT_Export_tool
+        
+    if OMT_TOOL.PANEL_EDGE_BANDING_45MM:
+        OMT_TOOL.PANEL_EDGE_BANDING_22MM = False
+        OMT_TOOL.PANEL_EDGE_BANDING_100MM = False
+    
+def UPDATED_PANEL_EDGE_BANDING_100MM(self, context):
+    SCENE = context.scene
+    OMT_TOOL = SCENE.OMT_Export_tool
+        
+    if OMT_TOOL.PANEL_EDGE_BANDING_100MM:
+        OMT_TOOL.PANEL_EDGE_BANDING_22MM = False
+        OMT_TOOL.PANEL_EDGE_BANDING_45MM = False
 
 # =====================================================
 #                      Properties
@@ -119,6 +173,19 @@ class OMT_Properties(PropertyGroup):
     
     SLOTTED_MDF_DISTANCE : FloatProperty(name = "Distância", subtype = "DISTANCE", unit = "LENGTH", min = 1, default = 0.11)
 
+    #DEFINIÇÕES DE SOLDA (METAL)
+    METAL_WELDING_CHAR : StringProperty(name = "Metal Welding Char",  default = 'w')
+    METAL_WELDING_TIME : IntProperty(name = "Tempo de Solda", default = 5, min = 0)
+
+    #DEFINIÇÕES DE DOBRA (METAL)
+    METAL_BENDING_CHAR : StringProperty(name = "Metal Bending Char",  default = 'd')
+    METAL_BENDING_TIME : IntProperty(name = "Tempo de Dobra", default = 5, min = 0)
+
+    #DEFINIÇÕES DE CORTE A LASER
+    METAL_LASER_CUTTING_MATERIAL : StringProperty(name = "Material",  default = "Corte Laser Metal")
+    METAL_LASER_CUTTING_NAME : StringProperty(name = "Descrição", default = "Corte Laser")
+    METAL_LASER_CUTTING_CHAR : StringProperty(name = "Metal Laser Char",  default = 'c')
+
 # =====================================================
 #                      Panels
 # =====================================================
@@ -134,8 +201,7 @@ class OMT_Measures(Panel):
         LAYOUT = self.layout
         SCENE = context.scene
         OMT_TOOL = SCENE.OMT_Export_tool
-        
-        
+    
         BOX = LAYOUT.box()
         ROW = BOX.row()
         ROW.prop(OMT_TOOL, "PANEL_MIN_DIMENSION")
@@ -143,7 +209,6 @@ class OMT_Measures(Panel):
         ROW = BOX.row()
         ROW.prop(OMT_TOOL, "PANEL_MAX_DIMENSION")
         ROW.prop(OMT_TOOL, "PANEL_MAX_DIMENSION_BOOL")
-        
         
         ROW = LAYOUT.row()
         ROW.operator("omt.assign_dimensions")
@@ -163,11 +228,9 @@ class OMT_Assign_Edge_Banding(Panel):
         SCENE = context.scene
         OMT_TOOL = SCENE.OMT_Export_tool
         
-        
         BOX = LAYOUT.box()
         BOX.prop(OMT_TOOL, "PANEL_MIN_DIMENSION_EDGE_BANDING")
         BOX.prop(OMT_TOOL, "PANEL_MAX_DIMENSION_EDGE_BANDING")
-        
         
         OUTSIDE_BOX = LAYOUT.box()
         INSIDE_BOX = OUTSIDE_BOX.box()
@@ -181,7 +244,6 @@ class OMT_Assign_Edge_Banding(Panel):
         ROW.prop(OMT_TOOL, "PANEL_EDGE_BANDING_22MM")
         ROW.prop(OMT_TOOL, "PANEL_EDGE_BANDING_45MM")
         ROW.prop(OMT_TOOL, "PANEL_EDGE_BANDING_100MM")
-        
         
         ROW = LAYOUT.row()
         ROW.operator("omt.assign_edge_banding")
@@ -287,10 +349,8 @@ class ASSIGN_OT_DIMENSIONS(Operator):
             LOCAL_PANEL_MIN_DIMENSION = int(round(OMT_TOOL.PANEL_MIN_DIMENSION*1000,0))
             LOCAL_PANEL_MAX_DIMENSION = int(round(OMT_TOOL.PANEL_MAX_DIMENSION*1000,0))
         
-        
         SELECTED_OBJECT_PANEL_MIN_DIMENSION = ""
         SELECTED_OBJECT_PANEL_MAX_DIMENSION = ""
-        JUMP_AUTOMATION = False
         
         #CONFIRMAR STRING DE 4 DÍGITOS PARA O TAMANHO MENOR
         if OMT_TOOL.PANEL_MIN_DIMENSION_BOOL == False:
@@ -321,6 +381,7 @@ class ASSIGN_OT_DIMENSIONS(Operator):
             SELECTED_OBJECT_PANEL_MAX_DIMENSION = str(LOCAL_PANEL_MAX_DIMENSION)        
         
         #DEFINIR TAMANHO PARA TODOS OS OBJETOS SELECIONADOS
+        JUMP_AUTOMATION = False
         for SELECTED_OBJECT in bpy.context.selected_objects:
             SELECTED_OBJECT_STRING = SELECTED_OBJECT.name
             
@@ -586,19 +647,21 @@ class EXPORT_OT_OBJECTS_TIME(Operator):
         SLOTTED_MDF = 0
 
         #DEFINIÇÕES DE SOLDA (METAL)
-        METAL_WELDING_CHAR = 'w'
-        METAL_WELDING_TIME = 5
+        METAL_WELDING_CHAR = OMT_TOOL.METAL_WELDING_CHAR
+        METAL_WELDING_TIME = OMT_TOOL.METAL_WELDING_TIME
+
         METAL_WELDING = 0
 
         #DEFINIÇÕES DE DOBRA (METAL)
-        METAL_BENDING_CHAR = 'd'
-        METAL_BENDING_TIME = 5
+        METAL_BENDING_CHAR = OMT_TOOL.METAL_BENDING_CHAR
+        METAL_BENDING_TIME = OMT_TOOL.METAL_BENDING_TIME
+
         METAL_BENDING = 0
 
         #DEFINIÇÕES DE CORTE A LASER
-        METAL_LASER_CUTTING_MATERIAL = "Corte Laser Metal"
-        METAL_LASER_CUTTING_NAME = "Corte Laser"
-        METAL_LASER_CUTTING_CHAR = 'c'
+        METAL_LASER_CUTTING_MATERIAL = OMT_TOOL.METAL_LASER_CUTTING_MATERIAL
+        METAL_LASER_CUTTING_NAME = OMT_TOOL.METAL_LASER_CUTTING_NAME
+        METAL_LASER_CUTTING_CHAR = OMT_TOOL.METAL_LASER_CUTTING_CHAR
 
         METAL_LASER_CUTTING = 0
         
