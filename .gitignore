@@ -1,4 +1,4 @@
-plugin/OMTExport_test.blend
+plugin/*.blend
+plugin/*.blend1
 plugin/*.zip
-*.blend
-*.blend1
+plugin/*.txt
