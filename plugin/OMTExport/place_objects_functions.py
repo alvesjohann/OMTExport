@@ -1,5 +1,6 @@
 import bpy
 import math
+import os
 
 #DEFINIÇÕES
 X_AXIS = 0
@@ -10,7 +11,8 @@ STANDARD_DISTANCE = 0.2
 MIN_AMOUNT = 2
 STANDARD_OFFSET = 0.0
 
-ACCESSORIES_PATH = "//assets/accessories.blend"
+PATH = os.path.dirname(__file__)
+ACCESSORIES_PATH = PATH + "\\assets\\accessories.blend"
 IMPORTED_OBJECT_NAME = "Cantoneira"
 LINK = False
 
