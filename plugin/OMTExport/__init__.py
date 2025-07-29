@@ -16,11 +16,16 @@ classes = [
     OMT_Material_Edge_Banding,
     OMT_Colors_Edge_Banding,
     OMT_Place_Objects,
+    OMT_Legacy_Panel,
+    OMT_Create_Materials_from_Excel,
+    OMT_Export_Excel,
     OMT_Export,
     ASSIGN_OT_DIMENSIONS,
     REMOVE_OT_DIMENSIONS,
     ASSIGN_OT_EDGE_BANDING,
     PLACE_OT_OBJECTS,
+    EXCEL_OT_CREATE_MATERIALS,
+    EXCEL_OT_EXPORT,
     EXPORT_OT_OBJECTS_TIME
 ]
         

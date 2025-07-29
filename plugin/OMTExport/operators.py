@@ -1,4 +1,6 @@
 import bpy
+import pandas as PD
+import shutil
 
 from math import ceil, floor
 from bpy.types import Operator
@@ -270,7 +272,138 @@ class PLACE_OT_OBJECTS(Operator):
         APPEND_OBJECTS(OBJECT_POSITIONS_DICT, "BIGGER_RIGHT")
 
         return {"FINISHED"}
+
+class EXCEL_OT_CREATE_MATERIALS(Operator):
+    bl_label = "Criar Materiais"
+    bl_idname = "omt.create_materials"
     
+    def execute(self, context):
+        SCENE = context.scene
+        OMT_TOOL = SCENE.OMT_Export_tool
+        MATERIAL_COLUMN_NAME = [OMT_TOOL.MATERIAL_COLUMN_NAME]
+
+        #import "Lista de Materiais"
+        MATERIALS_LIST = PD.read_excel(OMT_TOOL.MATERIALS_EXCEL_FILE, sheet_name = OMT_TOOL.MATERIAL_TAB, usecols = OMT_TOOL.MATERIAL_COLUMN, names = MATERIAL_COLUMN_NAME)
+        MATERIALS_LIST = MATERIALS_LIST[OMT_TOOL.MATERIAL_COLUMN_NAME].to_numpy()
+
+        for MATERIAL in MATERIALS_LIST:
+            bpy.data.materials.new(MATERIAL)
+        
+        return {"FINISHED"}
+    
+class EXCEL_OT_EXPORT(bpy.types.Operator):
+    bl_label = "Write Excel"
+    bl_idname = "omt.export_excel"
+    
+    def execute(self, context):
+        SCENE = context.scene
+        OMT_TOOL = SCENE.OMT_Export_tool
+
+        if bpy.data.is_saved==True:
+            BLENDER_PATH = bpy.path.abspath("//") #get the path of the current .blend file
+            BLENDER_FILE = bpy.path.display_name_from_filepath(bpy.data.filepath) #get the name of the .blend file
+            print('Path is: ' + BLENDER_PATH)
+            print('.blend name is: ' + BLENDER_FILE)
+        else:
+            print('File not saved.')
+            return {"FINISHED"}
+
+        #define path
+        EXCEL_FILE = BLENDER_PATH + BLENDER_FILE + '.xlsx' #file path
+
+        #copy costFile to actual Blender file directory
+        shutil.copyfile(OMT_TOOL.BLENDER_COST_FILE, EXCEL_FILE)
+
+        #get Lista de Materiais excel file
+        MATERIALS_DATABASE = PD.read_excel(OMT_TOOL.MATERIALS_EXCEL_FILE, sheet_name = OMT_TOOL.MATERIAL_TAB) 
+
+        #create lists
+        MATERIALS = []
+        MEASURES_X = []
+        MEASURES_Y =  []
+        AMOUNTS = []
+        NAMES = []
+
+        # get the current selection
+        OBJECTS = bpy.context.scene.objects
+
+        # Apply Scale
+        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+        # Set the unit system to metric
+        bpy.context.scene.unit_settings.system = 'METRIC'
+        # Set the length unit to meters
+        bpy.context.scene.unit_settings.length_unit = 'METERS'
+
+
+        for OBJECT in OBJECTS:
+                        
+            if "@" in [collection.name[0] for collection in OBJECT.users_collection]:
+                continue
+
+            MATERIAL = OBJECT.active_material.name
+            MATERIAL_TYPE = MATERIALS_DATABASE.loc[MATERIALS_DATABASE['Produtos'] == MATERIAL, 'cof']
+            MATERIAL_TYPE = MATERIAL_TYPE.to_string(index=False)
+               
+            #create a vector with the dimension's values
+            OBJECT_DIMENSIONS = [OBJECT.dimensions.x, OBJECT.dimensions.y, OBJECT.dimensions.z]
+            
+            #selection of flow based on material type
+            if MATERIAL_TYPE == 'a' or MATERIAL_TYPE == 'd': # area
+                OBJECT_DIMENSIONS.remove(min(OBJECT_DIMENSIONS))
+                MATERIALS.append(MATERIAL)
+                MEASURES_X.append(round(min(OBJECT_DIMENSIONS),3))
+                MEASURES_Y.append(round(max(OBJECT_DIMENSIONS),3))
+                AMOUNTS.append(1)
+                if OBJECT.name[-4] == '.':
+                    NAMES.append(OBJECT.name[:-4])
+                else:
+                    NAMES.append(OBJECT.name)
+            elif MATERIAL_TYPE == 'b' or MATERIAL_TYPE == 'e': #comprimento/metro
+                MATERIALS.append(MATERIAL)
+                MEASURES_X.append('X')
+                MEASURES_Y.append(round(max(OBJECT_DIMENSIONS),3)) 
+                AMOUNTS.append(1)
+                if OBJECT.name[-4] == '.':
+                    NAMES.append(OBJECT.name[:-4])
+                else:
+                    NAMES.append(OBJECT.name)
+            elif MATERIAL_TYPE == 'c': #item
+                # If the string is found, increment the value in the second column
+                MATERIALS.append(MATERIAL)
+                MEASURES_X.append('X')
+                MEASURES_Y.append('X')
+                AMOUNTS.append(1)
+                if OBJECT.name[-4] == '.':
+                    NAMES.append(OBJECT.name[:-4])
+                else:
+                    NAMES.append(OBJECT.name)
+            else:
+                MATERIALS.append(MATERIAL)
+                MEASURES_X.append('X')
+                MEASURES_Y.append(round(max(OBJECT_DIMENSIONS),3))
+                AMOUNTS.append(1)
+                if OBJECT.name[-4] == '.':
+                    NAMES.append(OBJECT.name[:-4])
+                else:
+                    NAMES.append(OBJECT.name)
+
+        # Set the length unit back to millimeters
+        bpy.context.scene.unit_settings.length_unit = 'MILLIMETERS'
+        # Deselect objects
+        bpy.ops.object.select_all(action='DESELECT')
+
+        #get Planilha de Custo file
+        DATAFRAME = PD.DataFrame(list(zip(MATERIALS, MEASURES_X, MEASURES_Y, AMOUNTS, NAMES)), columns=['Material','Larg.','Compr.','Quant.','Observações'])
+        print("\n\n\n")
+        print(DATAFRAME.to_string())
+
+        #write both dataframes to excelfile
+        with PD.ExcelWriter(EXCEL_FILE, mode='a', engine='openpyxl', if_sheet_exists='overlay') as WRITER:
+            DATAFRAME.to_excel(WRITER, sheet_name=OMT_TOOL.BLENDER_COST_FILE_TAB, startrow=OMT_TOOL.BLENDER_COST_FILE_ROW, startcol=OMT_TOOL.BLENDER_COST_FILE_COLUMN, header=False, index=False)
+            MATERIALS_DATABASE.to_excel(WRITER, sheet_name=OMT_TOOL.BLENDER_COST_FILE_MATERIALS_TAB, index=False)
+
+        return {"FINISHED"} 
+
 class EXPORT_OT_OBJECTS_TIME(Operator):
     bl_label = "Exportar"
     bl_idname = "omt.export_objects_time"
@@ -717,6 +850,5 @@ class EXPORT_OT_OBJECTS_TIME(Operator):
                     file.write(TIME + "\n")
         else:
             print('File not saved.')
-    
 
         return {"FINISHED"}

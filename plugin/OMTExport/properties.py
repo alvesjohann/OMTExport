@@ -2,8 +2,8 @@ from bpy.types import PropertyGroup
 
 from bpy.props import (
     BoolProperty,
-    FloatProperty,
     IntProperty,
+    FloatProperty,
     StringProperty
 )
 
@@ -119,3 +119,15 @@ class OMT_Properties(PropertyGroup):
     METAL_LASER_CUTTING_MATERIAL : StringProperty(name = "Material",  default = "Corte Laser Metal")
     METAL_LASER_CUTTING_NAME : StringProperty(name = "Descrição", default = "Corte Laser")
     METAL_LASER_CUTTING_CHAR : StringProperty(name = "Metal Laser Char",  default = 'c')
+
+    #DEFINIÇÕES DE EXCEL
+    MATERIAL_TAB : StringProperty(name = "Tab", default = "Dados")
+    MATERIAL_COLUMN : StringProperty(name = "Col.", default = "A")
+    MATERIAL_COLUMN_NAME : StringProperty(name = "Col. Materiais", default = "Produtos") 
+    MATERIALS_EXCEL_FILE: StringProperty(name = "Excel", subtype="FILE_PATH", default = "")
+
+    BLENDER_COST_FILE: StringProperty(name = "Excel", subtype="FILE_PATH", default = "")
+    BLENDER_COST_FILE_TAB: StringProperty(name = "Export Tab", default = "BlenderExport")
+    BLENDER_COST_FILE_ROW : IntProperty(name = "Start Row", default = 6)
+    BLENDER_COST_FILE_COLUMN: IntProperty(name = "Start Column", default = 0)
+    BLENDER_COST_FILE_MATERIALS_TAB: StringProperty(name = "Banco Tab", default = "Banco")

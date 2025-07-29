@@ -112,7 +112,80 @@ class OMT_Place_Objects(Panel):
         
         ROW = LAYOUT.row()
         ROW.operator("omt.place_objects")
-           
+
+class OMT_Legacy_Panel(Panel):
+    bl_label = "excelMaterials (Legado)"
+    bl_idname = "OMT_PT_EXCEL_MATERIALS_LEGACY"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "OMT Export"
+
+    def draw(self, context):
+        LAYOUT = self.layout
+        SCENE = context.scene
+        OMT_TOOL = SCENE.OMT_Export_tool
+
+class OMT_Create_Materials_from_Excel(Panel):
+    bl_label = "Criar Materiais"
+    bl_idname = "OMT_PT_CREATE_MATERIALS"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "OMT Export"
+    bl_parent_id = "OMT_PT_EXCEL_MATERIALS_LEGACY"
+    bl_options = {"DEFAULT_CLOSED"}
+
+    def draw(self, context):
+        LAYOUT = self.layout
+        SCENE = context.scene
+        OMT_TOOL = SCENE.OMT_Export_tool
+        
+        ROW = LAYOUT.row()
+        ROW.prop(OMT_TOOL, "MATERIALS_EXCEL_FILE")
+        
+        ROW = LAYOUT.row()
+        ROW.prop(OMT_TOOL, "MATERIAL_TAB")
+        
+        ROW = LAYOUT.row()
+        ROW.prop(OMT_TOOL, "MATERIAL_COLUMN")
+        
+        ROW = LAYOUT.row()
+        ROW.prop(OMT_TOOL, "MATERIAL_COLUMN_NAME")
+        
+        ROW = LAYOUT.row()
+        ROW.operator("omt.create_materials")
+
+class OMT_Export_Excel(Panel):
+    bl_label = "Make Excel"
+    bl_idname = "OMT_PT_EXPORT_EXCEL"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = "OMT Export"
+    bl_parent_id = "OMT_PT_EXCEL_MATERIALS_LEGACY"
+    bl_options = {"DEFAULT_CLOSED"}
+
+    def draw(self, context):
+        LAYOUT = self.layout
+        SCENE = context.scene
+        OMT_TOOL = SCENE.OMT_Export_tool
+        
+        ROW = LAYOUT.row()
+        ROW.prop(OMT_TOOL, "BLENDER_COST_FILE")
+        
+        ROW = LAYOUT.row()
+        ROW.prop(OMT_TOOL, "BLENDER_COST_FILE_TAB")
+        
+        ROW = LAYOUT.row()
+        ROW.prop(OMT_TOOL, "BLENDER_COST_FILE_ROW")
+        
+        ROW = LAYOUT.row()
+        ROW.prop(OMT_TOOL, "BLENDER_COST_FILE_COLUMN")
+        
+        ROW = LAYOUT.row()
+        ROW.prop(OMT_TOOL, "BLENDER_COST_FILE_MATERIALS_TAB")
+        
+        ROW = LAYOUT.row()
+        ROW.operator("omt.export_excel")
+
 class OMT_Export(Panel):
     bl_label = "Exportar Objetos e Tempos"
     bl_idname = "OMT_PT_EXPORT"
