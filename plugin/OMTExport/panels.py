@@ -1,23 +1,5 @@
 from bpy.types import Panel
-
-class OMT_Standards(Panel):
-    bl_label = "Padrões"
-    bl_idname = "OMT_PT_STANDARDS"
-    bl_space_type = "VIEW_3D"
-    bl_region_type = "UI"
-    bl_category = "OMT Export"
-
-    def draw(self, context):
-        LAYOUT = self.layout
-        SCENE = context.scene
-        OMT_TOOL = SCENE.OMT_Export_tool
-    
-        BOX = LAYOUT.box()
-        ROW = BOX.row()
-        ROW.prop(OMT_TOOL, "STANDARD_DISTANCE")
-        #ROW = BOX.row()
-        #ROW.prop(OMT_TOOL, "SEPARATION_MARK")
-        
+       
 class OMT_Measures(Panel):
     bl_label = "Sobrepor Medidas"
     bl_idname = "OMT_PT_MEASURES"
@@ -139,6 +121,26 @@ class OMT_Place_Objects(Panel):
         
         ROW = LAYOUT.row()
         ROW.operator("omt.place_objects")
+        
+class OMT_Standards(Panel):
+    bl_label = "Padrões"
+    bl_idname = "OMT_PT_STANDARDS"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_category = "OMT Export"
+    bl_parent_id = "OMT_PT_PLACE_OBJECTS"
+    bl_options = {"DEFAULT_CLOSED"}
+
+    def draw(self, context):
+        LAYOUT = self.layout
+        SCENE = context.scene
+        OMT_TOOL = SCENE.OMT_Export_tool
+    
+        BOX = LAYOUT.box()
+        ROW = BOX.row()
+        ROW.prop(OMT_TOOL, "STANDARD_DISTANCE")
+        #ROW = BOX.row()
+        #ROW.prop(OMT_TOOL, "SEPARATION_MARK")
 
 class OMT_Legacy_Panel(Panel):
     bl_label = "excelMaterials (Legado)"

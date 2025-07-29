@@ -11,12 +11,12 @@ from .operators import *
 
 classes = [
     OMT_Properties,
-    OMT_Standards,
     OMT_Measures,
     OMT_Assign_Edge_Banding,
     OMT_Material_Edge_Banding,
     OMT_Colors_Edge_Banding,
     OMT_Place_Objects,
+    OMT_Standards,
     OMT_Legacy_Panel,
     OMT_Create_Materials_from_Excel,
     OMT_Export_Excel,
