@@ -111,6 +111,9 @@ class OMT_Place_Objects(Panel):
         OMT_TOOL = SCENE.OMT_Export_tool
         
         ROW = LAYOUT.row()
+        ROW.prop(OMT_TOOL, "OBJECT_SIDE")
+        
+        ROW = LAYOUT.row()
         ROW.operator("omt.place_objects")
 
 class OMT_Legacy_Panel(Panel):

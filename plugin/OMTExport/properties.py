@@ -2,8 +2,9 @@ from bpy.types import PropertyGroup
 
 from bpy.props import (
     BoolProperty,
-    IntProperty,
+    EnumProperty,
     FloatProperty,
+    IntProperty,
     StringProperty
 )
 
@@ -13,6 +14,11 @@ class OMT_Properties(PropertyGroup):
     #DEFINIÇÕES GERAIS
     STANDARD_DISTANCE : FloatProperty(name = "Distãncia Padrão", default = 0.2)
     SEPARATION_MARK : StringProperty(name = "Separation Mark", default = " ")
+
+    #DEFINIÇÕES DE EIXO
+    X_AXIS : IntProperty(name = "X Axis", default = 0)
+    Y_AXIS : IntProperty(name = "Y Axis", default = 1)
+    Z_AXIS : IntProperty(name = "Z Axis", default = 2)
 
     #DEFINIÇÕES DE EXPORTAÇÃO
     OBJECTS_FILE : StringProperty(name = "Exportação: Lista de Objetos", default = "Lista de Peças e Materiais")
@@ -119,6 +125,17 @@ class OMT_Properties(PropertyGroup):
     METAL_LASER_CUTTING_MATERIAL : StringProperty(name = "Material",  default = "Corte Laser Metal")
     METAL_LASER_CUTTING_NAME : StringProperty(name = "Descrição", default = "Corte Laser")
     METAL_LASER_CUTTING_CHAR : StringProperty(name = "Metal Laser Char",  default = 'c')
+
+    #DEFINIÇÕES DE ADIÇÃO DE OBJETOS
+
+    OBJECT_SIDE : EnumProperty(name = "Lados",
+                               default = "SMALLER_LEFT",
+                               items = [("SMALLER_LEFT", "Lado menor (esquerda)", "Adicionar objetos ao lado menor à esquerda."),
+                                        ("SMALLER_RIGHT", "Lado menor (direita)", "Adicionar objetos ao lado menor à direita."),
+                                        ("BIGGER_LEFT", "Lado maior (esquerda)", "Adicionar objetos ao lado maior à esquerda."),
+                                        ("BIGGER_RIGHT", "Lado maior (direita)", "Adicionar objetos ao lado maior à direita.")]
+                               )
+
 
     #DEFINIÇÕES DE EXCEL
     MATERIAL_TAB : StringProperty(name = "Tab", default = "Dados")
