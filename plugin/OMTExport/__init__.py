@@ -11,6 +11,7 @@ from .operators import *
 
 classes = [
     OMT_Properties,
+    OMT_Standards,
     OMT_Measures,
     OMT_Assign_Edge_Banding,
     OMT_Material_Edge_Banding,

@@ -265,7 +265,8 @@ class PLACE_OT_OBJECTS(Operator):
         OMT_TOOL = SCENE.OMT_Export_tool
     
         OBJECT_POSITIONS_DICT = OBJECT_POSITIONS()
-        APPEND_OBJECTS(OBJECT_POSITIONS_DICT, OMT_TOOL.OBJECT_SIDE)
+        SIDE = OMT_TOOL.OBJECT_SIDE_SMALLER_BIGGER + "_" + OMT_TOOL.OBJECT_SIDE_LEFT_RIGHT
+        APPEND_OBJECTS(OBJECT_POSITIONS_DICT, OMT_TOOL.OBJECT_TO_APPEND, OMT_TOOL.ACCESSORIES_PATH, OMT_TOOL.STANDARD_DISTANCE, SIDE)
 
         return {"FINISHED"}
 
@@ -412,6 +413,7 @@ class EXPORT_OT_OBJECTS_TIME(Operator):
         LIST_OF_OBJECTS = []
         LIST_OF_TIMES = []
         REPLACE_MATERIAL_STRING = [" @m2", " @M2", "@m2", "@M2", " @m", " @M", "@m", "@M", " @u", " @U", "@u", "@U"]
+        STANDARD_DISTANCE = int(round(OMT_TOOL.STANDARD_DISTANCE*1000,0)) #CONVERTE FLOATS PARA INTS E METROS PARA MILÍMETROS
         
         #DEFINIÇÕES DE FITA DE BORDA
         EDGE_BANDING_MATERIAL = OMT_TOOL.PANEL_EDGE_BANDING_MATERIAL
@@ -631,10 +633,10 @@ class EXPORT_OT_OBJECTS_TIME(Operator):
                             SCREW_AUTOMATION = ITEM[1:3]
                             
                             SCREW_MIN_DIMENSION = int(ITEM[3])
-                            SCREW_MIN_DIMENSION = (MIN_DIMENSION/OMT_TOOL.STANDARD_DISTANCE)*SCREW_MIN_DIMENSION
+                            SCREW_MIN_DIMENSION = (MIN_DIMENSION/STANDARD_DISTANCE)*SCREW_MIN_DIMENSION
                             
                             SCREW_MAX_DIMENSION = int(ITEM[4])
-                            SCREW_MAX_DIMENSION = (MAX_DIMENSION/OMT_TOOL.STANDARD_DISTANCE)*SCREW_MAX_DIMENSION
+                            SCREW_MAX_DIMENSION = (MAX_DIMENSION/STANDARD_DISTANCE)*SCREW_MAX_DIMENSION
                             
                             #PARAFUSO 16mm
                             if SCREW_AUTOMATION == SCREW_16MM_CHAR:
@@ -674,10 +676,10 @@ class EXPORT_OT_OBJECTS_TIME(Operator):
                         #CANTONEIRA ZAMAC MDF    
                         elif ITEM_AUTOMATION == ANGLE_BRACKET_ZAMAC_CHAR:
                             ANGLE_BRACKET_ZAMAC_MIN_DIMENSION = int(ITEM[1])
-                            ANGLE_BRACKET_ZAMAC += (MIN_DIMENSION/OMT_TOOL.STANDARD_DISTANCE)*ANGLE_BRACKET_ZAMAC_MIN_DIMENSION
+                            ANGLE_BRACKET_ZAMAC += (MIN_DIMENSION/STANDARD_DISTANCE)*ANGLE_BRACKET_ZAMAC_MIN_DIMENSION
                             
                             ANGLE_BRACKET_ZAMAC_MAX_DIMENSION = int(ITEM[2])
-                            ANGLE_BRACKET_ZAMAC += (MAX_DIMENSION/OMT_TOOL.STANDARD_DISTANCE)*ANGLE_BRACKET_ZAMAC_MAX_DIMENSION
+                            ANGLE_BRACKET_ZAMAC += (MAX_DIMENSION/STANDARD_DISTANCE)*ANGLE_BRACKET_ZAMAC_MAX_DIMENSION
                        
                         #PINTURA MDF    
                         elif ITEM_AUTOMATION == PAINTED_MDF_CHAR:

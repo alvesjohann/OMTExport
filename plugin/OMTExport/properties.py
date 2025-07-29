@@ -12,8 +12,8 @@ from .update_functions import *
 
 class OMT_Properties(PropertyGroup):
     #DEFINIÇÕES GERAIS
-    STANDARD_DISTANCE : FloatProperty(name = "Distãncia Padrão", default = 0.2)
-    SEPARATION_MARK : StringProperty(name = "Separation Mark", default = " ")
+    STANDARD_DISTANCE : FloatProperty(name = "Distância", subtype = "DISTANCE", unit = "LENGTH",  min = 0, default = 0.2)
+    SEPARATION_MARK : StringProperty(name = "Split Mark", default = " ")
 
     #DEFINIÇÕES DE EIXO
     X_AXIS : IntProperty(name = "X Axis", default = 0)
@@ -127,13 +127,27 @@ class OMT_Properties(PropertyGroup):
     METAL_LASER_CUTTING_CHAR : StringProperty(name = "Metal Laser Char",  default = 'c')
 
     #DEFINIÇÕES DE ADIÇÃO DE OBJETOS
+    ACCESSORIES_PATH : StringProperty(name = "Accessories Path",  default = "\\assets\\accessories.blend")
 
-    OBJECT_SIDE : EnumProperty(name = "Lados",
-                               default = "SMALLER_LEFT",
-                               items = [("SMALLER_LEFT", "Lado menor (esquerda)", "Adicionar objetos ao lado menor à esquerda."),
-                                        ("SMALLER_RIGHT", "Lado menor (direita)", "Adicionar objetos ao lado menor à direita."),
-                                        ("BIGGER_LEFT", "Lado maior (esquerda)", "Adicionar objetos ao lado maior à esquerda."),
-                                        ("BIGGER_RIGHT", "Lado maior (direita)", "Adicionar objetos ao lado maior à direita.")]
+    OBJECT_TO_APPEND : EnumProperty(name = "",
+                               default = "Cantoneira",
+                               items = [("Cantoneira", "Cantoneira", "Cantoneira L 13x13mm Zamac.")]
+                               )
+
+    OBJECT_SIDE_SMALLER_BIGGER : EnumProperty(name = "Lado",
+                               default = "SMALLER",
+                               items = [("SMALLER", "Menor", "Adicionar objetos ao lado menor."),
+                                        ("BIGGER", "Maior", "Adicionar objetos ao lado maior.")]
+                               )
+    OBJECT_SIDE_LEFT_RIGHT : EnumProperty(name = "",
+                               default = "LEFT",
+                               items = [("LEFT", "Esquerdo", "Adicionar objetos à esquerda."),
+                                        ("RIGHT", "Direito", "Adicionar objetos à direita.")]
+                               )
+    OBJECT_SIDE_UP_DOWN : EnumProperty(name = "",
+                               default = "DOWN",
+                               items = [("UP", "Superior", "Adicionar objetos no topo."),
+                                        ("DOWN", "Inferior", "Adicionar objetos na base.")]
                                )
 
 
