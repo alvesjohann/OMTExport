@@ -7,7 +7,7 @@ from bpy.types import Operator
 from .place_objects_functions import *
 
 class ASSIGN_OT_DIMENSIONS(Operator):
-    bl_label = "Atribuir"
+    bl_label = "Atribuir/Remover"
     bl_idname = "omt.assign_dimensions"
     
     def execute(self, context):
@@ -18,23 +18,6 @@ class ASSIGN_OT_DIMENSIONS(Operator):
         LOCAL_PANEL_MIN_DIMENSION = int(round(OMT_TOOL.PANEL_MIN_DIMENSION*1000,0))
         LOCAL_PANEL_MAX_DIMENSION = int(round(OMT_TOOL.PANEL_MAX_DIMENSION*1000,0))
         
-        #SE OS VALORES SÃO NULOS, DESCONSIDERA-OS
-        if LOCAL_PANEL_MIN_DIMENSION == 0:
-            OMT_TOOL.PANEL_MIN_DIMENSION_BOOL = False
-        
-        if LOCAL_PANEL_MAX_DIMENSION == 0:
-            OMT_TOOL.PANEL_MAX_DIMENSION_BOOL = False
-        
-        #RETORNA SE TAMANHOS SÃO NULOS
-        if LOCAL_PANEL_MIN_DIMENSION == 0 and  OMT_TOOL.PANEL_MAX_DIMENSION_BOOL == False:
-            return {"FINISHED"}
-        if LOCAL_PANEL_MAX_DIMENSION == 0 and  OMT_TOOL.PANEL_MIN_DIMENSION_BOOL == False:
-            return {"FINISHED"}
-        if LOCAL_PANEL_MIN_DIMENSION + LOCAL_PANEL_MAX_DIMENSION == 0:
-            return {"FINISHED"}
-        if OMT_TOOL.PANEL_MAX_DIMENSION_BOOL == False and OMT_TOOL.PANEL_MIN_DIMENSION_BOOL == False:
-            return {"FINISHED"}
-        
         #ALTERA VALORES SE O LADO MENOR É MAIOR QUE O LADO MAIOR
         if LOCAL_PANEL_MIN_DIMENSION > LOCAL_PANEL_MAX_DIMENSION and OMT_TOOL.PANEL_MIN_DIMENSION_BOOL and OMT_TOOL.PANEL_MAX_DIMENSION_BOOL:
             CHANGE_MAX_MIN = OMT_TOOL.PANEL_MIN_DIMENSION
@@ -44,117 +27,52 @@ class ASSIGN_OT_DIMENSIONS(Operator):
             LOCAL_PANEL_MIN_DIMENSION = int(round(OMT_TOOL.PANEL_MIN_DIMENSION*1000,0))
             LOCAL_PANEL_MAX_DIMENSION = int(round(OMT_TOOL.PANEL_MAX_DIMENSION*1000,0))
         
-        SELECTED_OBJECT_PANEL_MIN_DIMENSION = ""
-        SELECTED_OBJECT_PANEL_MAX_DIMENSION = ""
-        
-        #CONFIRMAR STRING DE 4 DÍGITOS PARA O TAMANHO MENOR
-        if OMT_TOOL.PANEL_MIN_DIMENSION_BOOL == False:
+        #DEFINE STRING NULA PARA MEDIDA MENOR COM TAMANHO ZERADO OU CRIA STRING DE AUTOMAÇÃO
+        if LOCAL_PANEL_MIN_DIMENSION <= 0 or OMT_TOOL.PANEL_MIN_DIMENSION_BOOL == False:
             SELECTED_OBJECT_PANEL_MIN_DIMENSION = ""
-        elif LOCAL_PANEL_MIN_DIMENSION > 9999:
-            SELECTED_OBJECT_PANEL_MIN_DIMENSION = "9999"
-        elif LOCAL_PANEL_MIN_DIMENSION < 10:
-            SELECTED_OBJECT_PANEL_MIN_DIMENSION = "000" + str(LOCAL_PANEL_MIN_DIMENSION)
-        elif LOCAL_PANEL_MIN_DIMENSION < 100:
-            SELECTED_OBJECT_PANEL_MIN_DIMENSION = "00" + str(LOCAL_PANEL_MIN_DIMENSION)
-        elif LOCAL_PANEL_MIN_DIMENSION < 1000:
-            SELECTED_OBJECT_PANEL_MIN_DIMENSION = '0' + str(LOCAL_PANEL_MIN_DIMENSION)
         else:
-            SELECTED_OBJECT_PANEL_MIN_DIMENSION = str(LOCAL_PANEL_MIN_DIMENSION)
-            
-        #CONFIRMAR STRING DE 4 DÍGITOS PARA O TAMANHO MAIOR 
-        if OMT_TOOL.PANEL_MAX_DIMENSION_BOOL == False:
+            SELECTED_OBJECT_PANEL_MIN_DIMENSION = OMT_TOOL.DIMENSION_AUTOMATION_CHAR + str(LOCAL_PANEL_MIN_DIMENSION)
+
+        #DEFINE STRING NULA PARA MEDIDA MAIOR COM TAMANHO ZERADO OU CRIA STRING DE AUTOMAÇÃO
+        if LOCAL_PANEL_MAX_DIMENSION <= 0 or OMT_TOOL.PANEL_MAX_DIMENSION_BOOL == False:
             SELECTED_OBJECT_PANEL_MAX_DIMENSION = ""
-        elif LOCAL_PANEL_MAX_DIMENSION > 9999:
-            SELECTED_OBJECT_PANEL_MAX_DIMENSION = "9999"
-        elif LOCAL_PANEL_MAX_DIMENSION < 10:
-            SELECTED_OBJECT_PANEL_MAX_DIMENSION = "000" + str(LOCAL_PANEL_MAX_DIMENSION)
-        elif LOCAL_PANEL_MAX_DIMENSION < 100:
-            SELECTED_OBJECT_PANEL_MAX_DIMENSION = "00" + str(LOCAL_PANEL_MAX_DIMENSION)
-        elif LOCAL_PANEL_MAX_DIMENSION < 1000:
-            SELECTED_OBJECT_PANEL_MAX_DIMENSION = '0' + str(LOCAL_PANEL_MAX_DIMENSION)
         else:
-            SELECTED_OBJECT_PANEL_MAX_DIMENSION = str(LOCAL_PANEL_MAX_DIMENSION)        
+            if SELECTED_OBJECT_PANEL_MIN_DIMENSION == "":
+                SELECTED_OBJECT_PANEL_MIN_DIMENSION = OMT_TOOL.DIMENSION_AUTOMATION_CHAR
+            SELECTED_OBJECT_PANEL_MAX_DIMENSION = OMT_TOOL.DIMENSION_AUTOMATION_SEPARATION_CHAR + str(LOCAL_PANEL_MAX_DIMENSION)
         
         #DEFINIR TAMANHO PARA TODOS OS OBJETOS SELECIONADOS
-        JUMP_AUTOMATION = False
         for SELECTED_OBJECT in bpy.context.selected_objects:
             SELECTED_OBJECT_STRING = SELECTED_OBJECT.name
+
+            #REMOVE POSSÍVEL NOMERAÇÃO FINAL PARA VÁRIOS OBJETOS COM MESMO NOME
+            if "." in SELECTED_OBJECT_STRING:
+                SELECTED_OBJECT_STRING = SELECTED_OBJECT_STRING.split(".")[0]
             
-            #PARA OBJETO QUE TEM TAMANHO DEFINIDO E AUTOMAÇÃO
-            if OMT_TOOL.DIMENSION_AUTOMATION_CHAR in SELECTED_OBJECT_STRING:
-                SELECTED_OBJECT_NAME, SELECTED_OBJECT_AUTOMATION = SELECTED_OBJECT_STRING.split(OMT_TOOL.DIMENSION_AUTOMATION_CHAR)
-                
-                if OMT_TOOL.AUTOMATION_CHAR in SELECTED_OBJECT_AUTOMATION:
-                    SELECTED_OBJECT_AUTOMATION = SELECTED_OBJECT_AUTOMATION.split(OMT_TOOL.AUTOMATION_CHAR)[1]
-                else:
-                    SELECTED_OBJECT_AUTOMATION = ""
-                    JUMP_AUTOMATION = True
-            
-            #PARA OBJETO QUE TEM AUTOMAÇÃO
-            elif OMT_TOOL.AUTOMATION_CHAR in SELECTED_OBJECT_STRING:
+            #SALVA AUTOMAÇÕES CASO EXISTAM
+            if OMT_TOOL.AUTOMATION_CHAR in SELECTED_OBJECT_STRING:
                 SELECTED_OBJECT_NAME, SELECTED_OBJECT_AUTOMATION = SELECTED_OBJECT_STRING.split(OMT_TOOL.AUTOMATION_CHAR)
-            
-            #PARA OBJETOS QUE NÃO TEM NEM TAMANHO NEM AUTOMAÇÃO
+                SELECTED_OBJECT_AUTOMATION = " " + OMT_TOOL.AUTOMATION_CHAR + SELECTED_OBJECT_AUTOMATION
             else:
-                SELECTED_OBJECT_NAME = SELECTED_OBJECT_STRING.split(".")[0]
+                SELECTED_OBJECT_NAME = SELECTED_OBJECT_STRING
                 SELECTED_OBJECT_AUTOMATION = ""
-                JUMP_AUTOMATION = True
+
+            #PARA OBJETO QUE JÁ TENHA SOBREPOSIÇÃO DE MEDIDA
+            if OMT_TOOL.DIMENSION_AUTOMATION_CHAR in SELECTED_OBJECT_NAME:
+                SELECTED_OBJECT_NAME = SELECTED_OBJECT_NAME.split(OMT_TOOL.DIMENSION_AUTOMATION_CHAR)[0]
             
-            #EXCLUIR ESPAÇO EM BRANCO NO FINAL DO NOME DO OBJETO
+            #EXCLUIR ESPAÇO EM BRANCO NO FINAL DO NOME DO OBJETO CASO HAJA
             if SELECTED_OBJECT_NAME[-1] == " ":
                 SELECTED_OBJECT_NAME = SELECTED_OBJECT_NAME[:-1]
 
-            #ADICIONAR NUMERAÇÃO FINAL PARA O CASO DE OBJETOS COM NOMES IDÊNTICOS
-            if "." in SELECTED_OBJECT_AUTOMATION:
-                SELECTED_OBJECT_AUTOMATION = SELECTED_OBJECT_AUTOMATION.split(".")[0] + ".000"
-            else:
-                SELECTED_OBJECT_AUTOMATION = SELECTED_OBJECT_AUTOMATION + ".000"
+            #ADICIONAR NUMERAÇÃO FINAL
+            SELECTED_OBJECT_AUTOMATION = SELECTED_OBJECT_AUTOMATION + ".000"
                 
-            #ALTERAR NOME (SE O OBJETO NÃO POSSUI AUTOMAÇÃO, EXCLUI O CARACTER DE AUTOMAÇÃO)
-            if JUMP_AUTOMATION:
-                SELECTED_OBJECT_STRING = SELECTED_OBJECT_NAME + OMT_TOOL.DIMENSION_AUTOMATION_CHAR + SELECTED_OBJECT_PANEL_MIN_DIMENSION + OMT_TOOL.DIMENSION_AUTOMATION_SEPARATION_CHAR + SELECTED_OBJECT_PANEL_MAX_DIMENSION + SELECTED_OBJECT_AUTOMATION
-    
-            #ALTERAR NOME (SE O OBJETO POSSUI AUTOMAÇÃO)
-            else:
-                SELECTED_OBJECT_STRING = SELECTED_OBJECT_NAME + OMT_TOOL.DIMENSION_AUTOMATION_CHAR + SELECTED_OBJECT_PANEL_MIN_DIMENSION + OMT_TOOL.DIMENSION_AUTOMATION_SEPARATION_CHAR + SELECTED_OBJECT_PANEL_MAX_DIMENSION + " " + OMT_TOOL.AUTOMATION_CHAR + SELECTED_OBJECT_AUTOMATION
-                
-            #EXCLUIR "x" CASO MEDIDA MAIOR NÃO FOR SOBREPOSTA
-            ALONE_X = OMT_TOOL.DIMENSION_AUTOMATION_SEPARATION_CHAR + " "
-            if ALONE_X in SELECTED_OBJECT_STRING:
-                SELECTED_OBJECT_STRING = SELECTED_OBJECT_STRING.replace(ALONE_X, " ")
+            #ALTERAR NOME
+            SELECTED_OBJECT_STRING = SELECTED_OBJECT_NAME + SELECTED_OBJECT_PANEL_MIN_DIMENSION + SELECTED_OBJECT_PANEL_MAX_DIMENSION + SELECTED_OBJECT_AUTOMATION
                   
-            SELECTED_OBJECT.name = SELECTED_OBJECT_STRING.replace(OMT_TOOL.DIMENSION_AUTOMATION_SEPARATION_CHAR + ".",".")
+            SELECTED_OBJECT.name = SELECTED_OBJECT_STRING
         
-        return {"FINISHED"}
-
-class REMOVE_OT_DIMENSIONS(Operator):
-    bl_label = "Remover Medidas"
-    bl_idname = "omt.remove_dimensions"
-    
-    def execute(self, context):
-        SCENE = context.scene
-        OMT_TOOL = SCENE.OMT_Export_tool
-            
-        #EXCLUIR MEDIDAS
-        for SELECTED_OBJECT in bpy.context.selected_objects:
-            SELECTED_OBJECT_STRING = SELECTED_OBJECT.name
-            
-            if OMT_TOOL.DIMENSION_AUTOMATION_CHAR in SELECTED_OBJECT_STRING:
-                #SEPARA A AUTOMAÇÃO, SE ELA EXISTE, DO RESTO DA STRING
-                if OMT_TOOL.AUTOMATION_CHAR in SELECTED_OBJECT_STRING:
-                    SPLIT_NAME_AND_DIMENSIONS, SPLIT_AUTOMATION = SELECTED_OBJECT_STRING.split(OMT_TOOL.AUTOMATION_CHAR)
-                    SPLIT_AUTOMATION = " " + OMT_TOOL.AUTOMATION_CHAR + SPLIT_AUTOMATION.split(".")[0] + ".000"
-                    
-                    #SEPARA O NOME DA SOBREPOSIÇÃO DE MEDIDAS
-                    SPLIT_NAME, SPLIT_DIMENSION = SPLIT_NAME_AND_DIMENSIONS.split(OMT_TOOL.DIMENSION_AUTOMATION_CHAR)
-                else:
-                    SPLIT_NAME = SELECTED_OBJECT_STRING.split(OMT_TOOL.DIMENSION_AUTOMATION_CHAR)[0]
-                    SPLIT_AUTOMATION = ".000"
-                    
-                #ALTERA NOME DO OBJETO    
-                SELECTED_OBJECT_STRING = SPLIT_NAME + SPLIT_AUTOMATION
-                SELECTED_OBJECT.name = SELECTED_OBJECT_STRING
-                    
         return {"FINISHED"}
 
 class ASSIGN_OT_EDGE_BANDING(Operator):
@@ -288,7 +206,7 @@ class EXCEL_OT_CREATE_MATERIALS(Operator):
         
         return {"FINISHED"}
     
-class EXCEL_OT_EXPORT(bpy.types.Operator):
+class EXCEL_OT_EXPORT(Operator):
     bl_label = "Write Excel"
     bl_idname = "omt.export_excel"
     
@@ -296,103 +214,76 @@ class EXCEL_OT_EXPORT(bpy.types.Operator):
         SCENE = context.scene
         OMT_TOOL = SCENE.OMT_Export_tool
 
+        USE_BLENDER_MATERIALS = OMT_TOOL.USE_BLENDER_MATERIALS
+
         if bpy.data.is_saved==True:
-            BLENDER_PATH = bpy.path.abspath("//") #get the path of the current .blend file
-            BLENDER_FILE = bpy.path.display_name_from_filepath(bpy.data.filepath) #get the name of the .blend file
+            BLENDER_PATH = bpy.path.abspath("//")
+            BLENDER_FILE = bpy.path.display_name_from_filepath(bpy.data.filepath)
             print('Path is: ' + BLENDER_PATH)
             print('.blend name is: ' + BLENDER_FILE)
         else:
             print('File not saved.')
             return {"FINISHED"}
 
-        #define path
+        # define path
         EXCEL_FILE = BLENDER_PATH + BLENDER_FILE + '.xlsx' #file path
 
-        #copy costFile to actual Blender file directory
+        # copy costFile to actual Blender file directory
         shutil.copyfile(OMT_TOOL.BLENDER_COST_FILE, EXCEL_FILE)
 
-        #get Lista de Materiais excel file
-        MATERIALS_DATABASE = PD.read_excel(OMT_TOOL.MATERIALS_EXCEL_FILE, sheet_name = OMT_TOOL.MATERIAL_TAB) 
-
-        #create lists
-        MATERIALS = []
-        MEASURES_X = []
-        MEASURES_Y =  []
-        AMOUNTS = []
-        NAMES = []
+        # get Lista de Materiais excel file
+        MATERIALS_DATABASE = PD.read_excel(OMT_TOOL.MATERIALS_EXCEL_FILE, sheet_name = OMT_TOOL.MATERIAL_TAB)
 
         # get the current selection
         OBJECTS = bpy.context.scene.objects
 
-        # Apply Scale
-        bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-        # Set the unit system to metric
-        bpy.context.scene.unit_settings.system = 'METRIC'
-        # Set the length unit to meters
-        bpy.context.scene.unit_settings.length_unit = 'METERS'
-
-
+        ITEMS_DICT = {
+            "Material": [],
+            "Larg." : [],
+            "Compr." : [],
+            "Quant." : [],
+            "Observações" : []
+            }
+        
         for OBJECT in OBJECTS:
                         
-            if "@" in [collection.name[0] for collection in OBJECT.users_collection]:
+            if "@" in OBJECT.users_collection[0].name[0]:
                 continue
+            
+            if USE_BLENDER_MATERIALS:
+                MATERIAL = OBJECT.active_material.name
 
-            MATERIAL = OBJECT.active_material.name
-            MATERIAL_TYPE = MATERIALS_DATABASE.loc[MATERIALS_DATABASE['Produtos'] == MATERIAL, 'cof']
-            MATERIAL_TYPE = MATERIAL_TYPE.to_string(index=False)
+                MATERIAL_TYPE = OBJECT.users_collection[0].name.split('@')[1].lower()
+            else:
+                MATERIAL, MATERIAL_TYPE = OBJECT.users_collection[0].name.split('@')
+                while MATERIAL[-1] == " ":
+                    MATERIAL = MATERIAL[:-1]
+                MATERIAL_TYPE = MATERIAL_TYPE.lower()
                
             #create a vector with the dimension's values
             OBJECT_DIMENSIONS = [OBJECT.dimensions.x, OBJECT.dimensions.y, OBJECT.dimensions.z]
             
             #selection of flow based on material type
-            if MATERIAL_TYPE == 'a' or MATERIAL_TYPE == 'd': # area
-                OBJECT_DIMENSIONS.remove(min(OBJECT_DIMENSIONS))
-                MATERIALS.append(MATERIAL)
-                MEASURES_X.append(round(min(OBJECT_DIMENSIONS),3))
-                MEASURES_Y.append(round(max(OBJECT_DIMENSIONS),3))
-                AMOUNTS.append(1)
-                if OBJECT.name[-4] == '.':
-                    NAMES.append(OBJECT.name[:-4])
-                else:
-                    NAMES.append(OBJECT.name)
-            elif MATERIAL_TYPE == 'b' or MATERIAL_TYPE == 'e': #comprimento/metro
-                MATERIALS.append(MATERIAL)
-                MEASURES_X.append('X')
-                MEASURES_Y.append(round(max(OBJECT_DIMENSIONS),3)) 
-                AMOUNTS.append(1)
-                if OBJECT.name[-4] == '.':
-                    NAMES.append(OBJECT.name[:-4])
-                else:
-                    NAMES.append(OBJECT.name)
-            elif MATERIAL_TYPE == 'c': #item
-                # If the string is found, increment the value in the second column
-                MATERIALS.append(MATERIAL)
-                MEASURES_X.append('X')
-                MEASURES_Y.append('X')
-                AMOUNTS.append(1)
-                if OBJECT.name[-4] == '.':
-                    NAMES.append(OBJECT.name[:-4])
-                else:
-                    NAMES.append(OBJECT.name)
-            else:
-                MATERIALS.append(MATERIAL)
-                MEASURES_X.append('X')
-                MEASURES_Y.append(round(max(OBJECT_DIMENSIONS),3))
-                AMOUNTS.append(1)
-                if OBJECT.name[-4] == '.':
-                    NAMES.append(OBJECT.name[:-4])
-                else:
-                    NAMES.append(OBJECT.name)
+            ITEMS_DICT["Material"].append(MATERIAL)
+            ITEMS_DICT["Quant."].append(1)
+            ITEMS_DICT["Observações"].append(OBJECT.name.split('.')[0])
 
-        # Set the length unit back to millimeters
-        bpy.context.scene.unit_settings.length_unit = 'MILLIMETERS'
-        # Deselect objects
-        bpy.ops.object.select_all(action='DESELECT')
+            if MATERIAL_TYPE == 'm': #comprimento/metro
+                ITEMS_DICT["Larg."].append("X")
+                ITEMS_DICT["Compr."].append(round(max(OBJECT_DIMENSIONS),3))
+
+            elif MATERIAL_TYPE == 'u': #unidade
+                ITEMS_DICT["Larg."].append("X")
+                ITEMS_DICT["Compr."].append("X")
+
+            else: #MATERIAL_TYPE == 'm2' # area
+                OBJECT_DIMENSIONS.remove(min(OBJECT_DIMENSIONS))
+
+                ITEMS_DICT["Larg."].append(round(min(OBJECT_DIMENSIONS),3))
+                ITEMS_DICT["Compr."].append(round(max(OBJECT_DIMENSIONS),3))
 
         #get Planilha de Custo file
-        DATAFRAME = PD.DataFrame(list(zip(MATERIALS, MEASURES_X, MEASURES_Y, AMOUNTS, NAMES)), columns=['Material','Larg.','Compr.','Quant.','Observações'])
-        print("\n\n\n")
-        print(DATAFRAME.to_string())
+        DATAFRAME = PD.DataFrame(ITEMS_DICT)
 
         #write both dataframes to excelfile
         with PD.ExcelWriter(EXCEL_FILE, mode='a', engine='openpyxl', if_sheet_exists='overlay') as WRITER:
@@ -514,7 +405,10 @@ class EXPORT_OT_OBJECTS_TIME(Operator):
             
             #MÉTODOS PARA OS OBJETOS EM TODAS AS OUTRAS COLEÇÕES
             for OBJECT in COLLECTION.all_objects:
-                OBJECT_STRING = OBJECT.name.split(".")[0]
+                if "." in OBJECT.name:
+                    OBJECT_STRING = OBJECT.name.split(".")[0]
+                else:
+                    OBJECT_STRING = OBJECT.name
                
                 #ENCONTRAR TODAS AS MEDIDAS
                 THICKNESS = round(min(OBJECT.dimensions.x, OBJECT.dimensions.y, OBJECT.dimensions.z),3)
@@ -525,14 +419,17 @@ class EXPORT_OT_OBJECTS_TIME(Operator):
                 #SOBREPOSIÇÃO DE DIMENSÕES
                 if OMT_TOOL.DIMENSION_AUTOMATION_CHAR in OBJECT_STRING:
                     FORCED_DIMENSIONS = OBJECT_STRING.split(OMT_TOOL.DIMENSION_AUTOMATION_CHAR)[1].replace(" ","")
+
+                    if OMT_TOOL.AUTOMATION_CHAR in FORCED_DIMENSIONS:
+                        FORCED_DIMENSIONS = OBJECT_STRING.split(OMT_TOOL.AUTOMATION_CHAR)[0].replace(" ","")
                    
                     try:
-                        MIN_DIMENSION = float(FORCED_DIMENSIONS[:4])/1000
+                        MIN_DIMENSION = float(FORCED_DIMENSIONS.split(OMT_TOOL.DIMENSION_AUTOMATION_SEPARATION_CHAR)[0])/1000
                     except:
                         pass
                     try:
-                        FORCED_DIMENSIONS = OBJECT_STRING.lower().split(OMT_TOOL.DIMENSION_AUTOMATION_SEPARATION_CHAR)[1]
-                        MAX_DIMENSION = float(FORCED_DIMENSIONS[:4])/1000
+                        #FORCED_DIMENSIONS = OBJECT_STRING.lower().split(OMT_TOOL.DIMENSION_AUTOMATION_SEPARATION_CHAR)[1]
+                        MAX_DIMENSION = float(FORCED_DIMENSIONS.split(OMT_TOOL.DIMENSION_AUTOMATION_SEPARATION_CHAR)[1])/1000
                     except:
                         pass
                    

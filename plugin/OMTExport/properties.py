@@ -152,6 +152,8 @@ class OMT_Properties(PropertyGroup):
 
 
     #DEFINIÇÕES DE EXCEL
+    USE_BLENDER_MATERIALS : BoolProperty(name = "Usar Materiais do Blender", default = True, description = "Quando desmarcado, usará os nomes das coleções")
+
     MATERIAL_TAB : StringProperty(name = "Tab", default = "Dados")
     MATERIAL_COLUMN : StringProperty(name = "Col.", default = "A")
     MATERIAL_COLUMN_NAME : StringProperty(name = "Col. Materiais", default = "Produtos") 

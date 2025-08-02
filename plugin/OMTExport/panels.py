@@ -22,9 +22,6 @@ class OMT_Measures(Panel):
         
         ROW = LAYOUT.row()
         ROW.operator("omt.assign_dimensions")
-        
-        ROW = LAYOUT.row()
-        ROW.operator("omt.remove_dimensions")
 
 class OMT_Assign_Edge_Banding(Panel):
     bl_label = "Fita de Borda"
@@ -211,6 +208,9 @@ class OMT_Export_Excel(Panel):
         
         ROW = LAYOUT.row()
         ROW.prop(OMT_TOOL, "BLENDER_COST_FILE_MATERIALS_TAB")
+        
+        ROW = LAYOUT.row()
+        ROW.prop(OMT_TOOL, "USE_BLENDER_MATERIALS")
         
         ROW = LAYOUT.row()
         ROW.operator("omt.export_excel")
